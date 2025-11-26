@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>OrgaTime | Quadro de Tarefas + Pomodoro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">
+  <span class="logo-dot"></span>
+  <span class="logo-text">OrgaTime</span>
+</div>
+<p class="logo-subtitle">Organização inteligente do seu tempo</p>
+    <div class="topbar-info">
+      <span class="hint">
+        Arraste tarefas entre colunas • Clique em uma tarefa para vinculá-la ao Pomodoro
+      </span>
+      <div id="user-info" class="user-info hidden">
+        <span class="user-email-label" id="user-email-label"></span>
+        <button id="logout-btn" class="logout-btn">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- tela de autenticaçao -->
+  <div id="auth-wrapper" class="auth-wrapper">
+    <div class="auth-card">
+      <h2>Acessar painel</h2>
+
+      <form id="login-form">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" type="email" required />
+
+        <label for="login-password">Senha</label>
+        <input id="login-password" type="password" required />
+
+        <button type="submit" class="btn-primary">Entrar</button>
+        <div id="login-error" class="auth-error"></div>
+      </form>
+
+      <div class="auth-divider">ou</div>
+
+      <h3>Criar conta</h3>
+
+      <form id="register-form">
+        <label for="register-email">E-mail</label>
+        <input id="register-email" type="email" required />
+
+        <label for="register-password">Senha (mín. 6 caracteres)</label>
+        <input id="register-password" type="password" minlength="6" required />
+
+        <button type="submit" class="btn-secondary">Cadastrar</button>
+        <div id="register-error" class="auth-error"></div>
+      </form>
+
+      <p class="auth-hint">
+        Seus quadros, tempos e estatísticas ficam salvos na sua conta.
+      </p>
+    </div>
+  </div>
+
+  <!-- app após login -->
+  <main id="app-root" class="app-root hidden">
+    <!-- Abas -->
+    <section class="app-tabs">
+      <button class="tab-btn active" data-tab="board">Quadro & Pomodoro</button>
+      <button class="tab-btn" data-tab="stats">Estatísticas</button>
+    </section>
+
+    <!-- telas quadro e pomodoro -->
+    <div id="tab-board" class="tab-content">
+      <section class="layout">
+        <!-- painel de criação de tarefas -->
+        <section class="side-panel">
+          <h2>Criar tarefa</h2>
+          <form id="task-form" autocomplete="off">
+            <label for="task-title">Título *</label>
+            <input id="task-title" type="text" required placeholder="Ex: Estudar algoritmo" />
+
+            <label for="task-desc">Descrição</label>
+            <textarea id="task-desc" rows="3" placeholder="Detalhes rápidos da tarefa"></textarea>
+
+            <div class="row">
+              <div class="field">
+                <label for="task-column">Lista inicial</label>
+                <select id="task-column">
+                  <option value="todo">A Fazer</option>
+                  <option value="doing">Em Progresso</option>
+                  <option value="done">Concluído</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="task-priority">Prioridade</label>
+                <select id="task-priority">
+                  <option value="normal">Normal</option>
+                  <option value="alta">Alta</option>
+                  <option value="baixa">Baixa</option>
+                </select>
+              </div>
+            </div>
+            
+                <div class="field">
+                   <label for="task-estimate">Tempo estimado (min)</label>
+                    <input
+                    type="number"
+                    id="task-estimate"
+                    min="0"
+                    placeholder="Ex.: 60"
+                    />
+                </div>
+
+            <button type="submit" class="btn-primary">Adicionar tarefa</button>
+          </form>
+
+          <p class="side-tip">
+            💡 Clique em uma tarefa para defini-la como foco atual no Pomodoro.
+          </p>
+        </section>
+
+        <!-- quadro kanban -->
+        <section class="board">
+          <div class="column" data-column="todo">
+            <div class="column-header">
+              <h3>A Fazer</h3>
+              <span class="column-count" data-count="todo">0</span>
+            </div>
+            <div class="column-body droppable"></div>
+          </div>
+
+          <div class="column" data-column="doing">
+            <div class="column-header">
+              <h3>Em Progresso</h3>
+              <span class="column-count" data-count="doing">0</span>
+            </div>
+            <div class="column-body droppable"></div>
+          </div>
+
+          <div class="column" data-column="done">
+            <div class="column-header">
+              <h3>Concluído</h3>
+              <span class="column-count" data-count="done">0</span>
+            </div>
+            <div class="column-body droppable"></div>
+          </div>
+        </section>
+
+        <!-- timer pomodoro -->
+        <section class="pomodoro-panel">
+          <h2>Pomodoro</h2>
+
+          <div class="current-task">
+            <span class="label">Tarefa vinculada:</span>
+            <span id="current-task-label" class="value">Nenhuma tarefa vinculada</span>
+          </div>
+
+          <div class="pomodoro-modes">
+            <button class="mode-btn active" data-mode="focus">Foco 25:00</button>
+            <button class="mode-btn" data-mode="short">Pausa curta 5:00</button>
+            <button class="mode-btn" data-mode="long">Pausa longa 15:00</button>
+          </div>
+
+          <!-- indicação visual do modo -->
+          <div class="current-mode-indicator">
+            <span id="mode-dot" class="mode-dot mode-focus"></span>
+            <span id="mode-label" class="mode-label">Modo: Foco (25 min)</span>
+          </div>
+
+          <!-- som do alarme -->
+          <div class="sound-toggle">
+            <label class="switch">
+              <input type="checkbox" id="sound-toggle" checked />
+              <span class="slider"></span>
+            </label>
+            <span class="sound-label">Som do alarme</span>
+          </div>
+
+          <!-- tempo personalizado -->
+          <div class="custom-time">
+            <label for="custom-minutes">Tempo personalizado (min)</label>
+            <div class="custom-input-row">
+              <input
+                type="number"
+                id="custom-minutes"
+                min="1"
+                max="180"
+                placeholder="Ex: 30"
+              />
+              <button id="apply-custom" class="btn-mini">Usar</button>
+            </div>
+          </div>
+
+          <div class="timer-display" id="timer-display">25:00</div>
+
+          <div class="pomodoro-actions">
+            <button id="start-btn" class="btn-secondary">Iniciar</button>
+            <button id="pause-btn" class="btn-secondary">Pausar</button>
+            <button id="reset-btn" class="btn-ghost">Resetar</button>
+          </div>
+
+          <div class="pomodoro-status">
+            <span id="phase-label">Foco em andamento</span>
+            <span id="cycle-label">0 ciclo(s) de foco concluído(s)</span>
+          </div>
+          <div class="paused-info hidden" id="paused-info">
+            <span class="paused-label">Tempo pausado:</span>
+            <span class="paused-value" id="paused-time">00:00</span>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <!-- tela de estatísticas -->
+    <div id="tab-stats" class="tab-content hidden">
+      <section class="stats-panel">
+        <h2>Estatísticas de estudo</h2>
+        <p class="stats-subtitle">
+          Os dados abaixo são calculados com base nos ciclos concluídos neste Pomodoro.
+        </p>
+        <div class="stats-filter">
+            <label for="stats-date">Filtrar por dia:</label>
+            <input type="date" id="stats-date" />
+            <button id="stats-clear" class="btn-mini" type="button">Limpar</button>
+            <span id="stats-filter-label" class="stats-filter-label">
+                Exibindo todos os registros
+            </span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Tempo total focado</div>
+            <div id="stat-total-focus" class="stat-value">0 min</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tempo total (foco + pausas)</div>
+            <div id="stat-total-all" class="stat-value">0 min</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sessões registradas</div>
+            <div id="stat-total-sessions" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tempo em pausas curtas</div>
+            <div id="stat-total-short" class="stat-value">0 min</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tempo em pausas longas</div>
+            <div id="stat-total-long" class="stat-value">0 min</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tempo pausado em foco</div>
+            <div id="stat-total-paused-focus" class="stat-value">0 min</div>
+          </div>
+      </div>
+
+        <h3>Últimas sessões</h3>
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Tipo</th>
+              <th>Tarefa</th>
+              <th>Duração</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="stat-sessions-body"></tbody>
+        </table>
+
+        <div class="stats-section">
+          <h3 class="stats-section-title">Tempo por tarefa</h3>
+            <p class="stats-subtitle">
+              Somatório de tempo de foco e pausas para cada tarefa vinculada ao Pomodoro.
+              O filtro de data, quando aplicado, considera apenas as sessões daquele dia.
+            </p>
+            <table class="stats-table">
+              <thead>
+                <tr>
+                <th>Tarefa</th>
+                <th>Estimado</th>
+                <th>Foco</th>
+                <th>Pausas</th>
+                <th>Total</th>
+                <th>Progresso</th>
+                </tr>
+              </thead>
+              <tbody id="stat-tasks-body"></tbody>
+            </table>
+        </div>
+
+        <h3>Tempo total por dia (últimos registros)</h3>
+        <div id="stat-byday" class="stats-byday"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+  <script src="script.js"></script>
+</body>
+</html>
