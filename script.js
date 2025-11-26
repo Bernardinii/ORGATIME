@@ -1,4 +1,4 @@
-// configuracao firebase
+// ======================= CONFIGURAÇÃO FIREBASE =======================
 const firebaseConfig = {
   apiKey: "AIzaSyDbBhsxdYcUApNySttQMNiUlOeeLHoD5eA",
   authDomain: "orgatime-b0dc6.firebaseapp.com",
@@ -14,7 +14,7 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ---------- APP ----------
+// ======================= APP =======================
 document.addEventListener("DOMContentLoaded", () => {
   /* ======= ELEMENTOS GERAIS ======= */
 
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!stats.pauseDuringFocusByDay) stats.pauseDuringFocusByDay = {};
   if (!stats.pauseDuringFocusByTask) stats.pauseDuringFocusByTask = {};
 
-  /* ======= (HORÁRIO LOCAL/BRASIL) ======= */
+  /* ======= DATA LOCAL (BRASIL) ======= */
 
   function getLocalDayKey(date = new Date()) {
     const d = date;
@@ -209,13 +209,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[c] || c));
+    return str.replace(/[&<>"']/g, (c) => (
+      {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[c] || c
+    ));
   }
 
   function formatDurationMMSS(sec) {
@@ -319,14 +321,14 @@ document.addEventListener("DOMContentLoaded", () => {
       ? `${task.estimateMinutes} min`
       : "—";
 
-     let progressPercent = null;
-      if (task.estimateMinutes && task.estimateMinutes > 0) {
+    let progressPercent = null;
+    if (task.estimateMinutes && task.estimateMinutes > 0) {
       const estimatedSec = task.estimateMinutes * 60;
       progressPercent = Math.min(
-      100,
-      Math.round((totals.focusSec / estimatedSec) * 100)
+        100,
+        Math.round((totals.focusSec / estimatedSec) * 100)
       );
-    } 
+    }
 
     card.innerHTML = `
       <div class="task-header">
@@ -508,9 +510,8 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   function setMode(mode, customSeconds) {
-    // Cancela pausa em foco se houver (sem continuar contando)
+    // Cancela pausa em foco se houver (registrando ela também)
     if (pauseStart) {
-      // Ao mudar de modo durante pausa em foco, vamos contabilizar a pausa também:
       finalizePauseInFocus("change-mode");
     }
 
@@ -620,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* === Finalizar pausa em foco (usado no start e no reset) === */
+  /* === Finalizar pausa em foco === */
 
   function finalizePauseInFocus(reason) {
     if (
@@ -673,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
     stopPausedDisplay();
   }
 
-  /* === Alarme + animação === */
+  /* === Alarme === */
 
   function playAlarm() {
     if (!soundEnabled || !soundAllowed) return;
@@ -742,7 +743,10 @@ document.addEventListener("DOMContentLoaded", () => {
     timerInterval = null;
 
     // registra tempo parcial (foco ou pausa) até o momento
-    if (segmentStartRemaining !== null && segmentStartRemaining > remainingTime) {
+    if (
+      segmentStartRemaining !== null &&
+      segmentStartRemaining > remainingTime
+    ) {
       const seg = segmentStartRemaining - remainingTime;
       if (seg > 0) {
         logSession(currentMode, seg);
@@ -815,12 +819,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStats();
   }
 
-
   function handleTimerEnd() {
     flashTimer();
     playAlarm();
 
-    if (segmentStartRemaining !== null && segmentStartRemaining > remainingTime) {
+    if (
+      segmentStartRemaining !== null &&
+      segmentStartRemaining > remainingTime
+    ) {
       const seg = segmentStartRemaining - remainingTime;
       if (seg > 0) {
         logSession(currentMode, seg);
@@ -966,7 +972,7 @@ document.addEventListener("DOMContentLoaded", () => {
       statPausedFocusEl.textContent = formatDurationMMSS(pausedFocusSec);
     }
 
-    // Últimas sessões
+    // Últimas sessões (todas)
     statSessionsBody.innerHTML = "";
     sessions.forEach((sWrap) => {
       const s = sWrap;
@@ -1071,7 +1077,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Tempo por dia (usar byDay já calculado, que está no fuso local)
+    // Tempo por dia (usar byDay já calculado, em fuso local)
     statByDayEl.innerHTML = "";
     const byDay = stats.byDay || {};
 
@@ -1093,9 +1099,9 @@ document.addEventListener("DOMContentLoaded", () => {
         a[0].localeCompare(b[0])
       );
       const maxSec =
-        last.length > 0 ? Math.max(...last.map(([_, sec]) => sec)) : 0;
+        entries.length > 0 ? Math.max(...entries.map(([_, sec]) => sec)) : 0;
 
-      last.forEach(([day, sec]) => {
+      entries.forEach(([day, sec]) => {
         const mins = Math.round(sec / 60);
         const width = maxSec ? (sec / maxSec) * 100 : 0;
         const row = document.createElement("div");
